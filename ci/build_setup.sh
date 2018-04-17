@@ -2,6 +2,8 @@
 
 # Configure environment variables for Bazel build and test.
 
+set +e
+. scl_source enable python27
 set -e
 
 export PPROF_PATH=/thirdparty_build/bin/pprof
@@ -61,9 +63,13 @@ export BAZEL="bazel"
 # Not sandboxing, since non-privileged Docker can't do nested namespaces.
 BAZEL_OPTIONS="--package_path %workspace%:${ENVOY_SRCDIR}"
 export BAZEL_QUERY_OPTIONS="${BAZEL_OPTIONS}"
+
 export BAZEL_BUILD_OPTIONS="--strategy=Genrule=standalone --spawn_strategy=standalone \
   --verbose_failures ${BAZEL_OPTIONS} --action_env=HOME --action_env=PYTHONUSERBASE \
+  --host_cxxopt=-DOPENSSL_NO_ASM --host_copt=-DOPENSSL_NO_ASM --cxxopt=-DOPENSSL_NO_ASM --copt=-DOPENSSL_NO_ASM \
+  --host_cxxopt=-march=core2 --host_copt=-march=core2 --cxxopt=-march=core2 --copt=-march=core2 \
   --jobs=${NUM_CPUS} --show_task_finish ${BAZEL_BUILD_EXTRA_OPTIONS}"
+
 export BAZEL_TEST_OPTIONS="${BAZEL_BUILD_OPTIONS} --test_env=HOME --test_env=PYTHONUSERBASE \
   --test_env=UBSAN_OPTIONS=print_stacktrace=1 \
   --cache_test_results=no --test_output=all ${BAZEL_EXTRA_TEST_OPTIONS}"

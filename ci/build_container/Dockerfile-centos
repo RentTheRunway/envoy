@@ -1,4 +1,4 @@
-FROM centos:7
+FROM centos:6.9
 
 COPY ./build_and_install_deps.sh ./recipe_wrapper.sh ./Makefile ./build_container_common.sh /
 COPY WORKSPACE /bazel-prebuilt/
