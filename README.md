@@ -15,7 +15,7 @@ Apache 3.2.3
 #### Building Envoy
 In order to build envoy, you first need to build a docker image that will act as the build environment using this script:
 ```
-ci/build_container/build_container_centos_6.9.sh
+./ci/build_container/build_container_centos_6.9.sh
 ```
 
 Ideally, you want to then tag the newly created docker image (assume your docker image id is IMAGE_ID):
