@@ -54,7 +54,7 @@ rpmbuild --define "_version 1.6.0" --define "_build 1" -bb /rpm/envoy.spec
 cp /root/rpmbuild/RPMS/x86_64/envoy-1.6.0-1.x86_64.rpm /rpm
 ```
 
-Finally, using maven, upload the rpm to nexus
+Finally, exit the container, and using maven, upload the rpm to nexus
 ```
 ./rpm/publish_rpm.sh
 ```
