@@ -7,7 +7,10 @@ If you wish to build envoy for CentOS 6.9, check out the `v1.6.0-centos-6.9` bra
 
 #### Build environment used
 macOS Sierra Version 10.12.4
+
 Docker 18.03.0-ce-mac60 (23751)
+
+Apache 3.2.3
 
 #### Building Envoy
 In order to build envoy, you first need to build a docker image that will act as the build environment using this script:
