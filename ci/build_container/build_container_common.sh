@@ -34,7 +34,7 @@ mkdir /bazel-prebuilt-root /bazel-prebuilt-output
 BAZEL_OPTIONS="--output_user_root=/bazel-prebuilt-root --output_base=/bazel-prebuilt-output"
 cd /bazel-prebuilt
 for BAZEL_MODE in opt dbg fastbuild; do
-  bazel ${BAZEL_OPTIONS} build -c "${BAZEL_MODE}" //bazel/external:all_external
+  bazel ${BAZEL_OPTIONS} build -c "${BAZEL_MODE}" --host_cxxopt="-march=core2" --host_copt="-march=core2" --cxxopt="-march=core2" --copt="-march=core2" //bazel/external:all_external
 done
 # Allow access by non-root for building.
 chmod -R a+rX /bazel-prebuilt-root /bazel-prebuilt-output
