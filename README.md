@@ -1,5 +1,62 @@
 ![Envoy Logo](https://github.com/envoyproxy/artwork/blob/master/PNG/Envoy_Logo_Final_PANTONE.png)
 
+## RtR Specific Instructions
+By default, envoy easily builds for CentOS 7 and up.
+
+If you wish to build envoy for CentOS 6.9, check out the `v1.6.0-centos-6.9` branch and follow these instructions
+
+#### Build environment used
+macOS Sierra Version 10.12.4
+Docker 18.03.0-ce-mac60 (23751)
+
+#### Building Envoy
+In order to build envoy, you first need to build a docker image that will act as the build environment using this script:
+```
+ci/build_container/build_container_centos_6.9.sh
+```
+
+Ideally, you want to then tag the newly created docker image (assume your docker image id is IMAGE_ID):
+```
+docker tag {IMAGE_ID} envoy-build:envoy-1.6.0-centos-6.9
+```
+
+Next using the newly built container, you compile envoy:
+```
+IMAGE_NAME=envoy-build IMAGE_ID=envoy-1.6.0-centos-6.9 ./ci/run_envoy_docker.sh './ci/do_ci.sh bazel.release.server_only'
+```
+
+Once this is finished, you should have a compiled binary in the `build_release_stripped` directory of your checked out envoy repo.
+
+#### rpmbuild and upload to Nexus
+First, copy your envoy binary to the rpm directory:
+```
+cp build_release_stripped/envoy rpm/usr/bin
+```
+
+Next, run a container to create the rpm with:
+
+```
+docker run -it -v"$PWD/rpm":/rpm centos:6.9 bash
+```
+
+Next build the rpm after copying various files:
+
+```
+mkdir -p /root/rpmbuild/BUILDROOT/envoy-1.6.0-1.x86_64/usr/bin
+mkdir -p /root/rpmbuild/BUILDROOT/envoy-1.6.0-1.x86_64/etc/init.d
+cp /rpm/etc/init.d/envoy /root/rpmbuild/BUILDROOT/envoy-1.6.0-1.x86_64/etc/init.d/envoy
+cp /rpm/usr/bin/envoy /root/rpmbuild/BUILDROOT/envoy-1.6.0-1.x86_64/usr/bin
+yum install rpm-build
+rpmbuild --define "_version 1.6.0" --define "_build 1" -bb /rpm/envoy.spec
+cp /root/rpmbuild/RPMS/x86_64/envoy-1.6.0-1.x86_64.rpm /rpm
+```
+
+Finally, using maven, upload the rpm to nexus
+```
+./rpm/publish_rpm.sh
+```
+
+
 [C++ L7 proxy and communication bus](https://www.envoyproxy.io/)
 
 Envoy is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CNCF). If you are a
