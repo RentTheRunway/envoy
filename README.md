@@ -49,7 +49,7 @@ mkdir -p /root/rpmbuild/BUILDROOT/envoy-1.6.0-1.x86_64/usr/bin
 mkdir -p /root/rpmbuild/BUILDROOT/envoy-1.6.0-1.x86_64/etc/init.d
 cp /rpm/etc/init.d/envoy /root/rpmbuild/BUILDROOT/envoy-1.6.0-1.x86_64/etc/init.d/envoy
 cp /rpm/usr/bin/envoy /root/rpmbuild/BUILDROOT/envoy-1.6.0-1.x86_64/usr/bin
-yum install rpm-build
+yum -y install rpm-build
 rpmbuild --define "_version 1.6.0" --define "_build 1" -bb /rpm/envoy.spec
 cp /root/rpmbuild/RPMS/x86_64/envoy-1.6.0-1.x86_64.rpm /rpm
 ```
