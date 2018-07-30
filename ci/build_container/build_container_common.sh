@@ -8,11 +8,6 @@ curl --location --output /usr/local/bin/buildifier https://github.com/bazelbuild
 # GCC for everything.
 export CC=gcc
 export CXX=g++
-CXX_VERSION="$(${CXX} --version | grep ^g++)"
-if [[ "${CXX_VERSION}" != "${EXPECTED_CXX_VERSION}" ]]; then
-  echo "Unexpected compiler version: ${CXX_VERSION}"
-  exit 1
-fi
 
 export THIRDPARTY_DEPS=/tmp
 export THIRDPARTY_SRC=/thirdparty
@@ -31,7 +26,7 @@ mkdir /bazel-prebuilt-root /bazel-prebuilt-output
 BAZEL_OPTIONS="--output_user_root=/bazel-prebuilt-root --output_base=/bazel-prebuilt-output"
 cd /bazel-prebuilt
 for BAZEL_MODE in opt dbg fastbuild; do
-  bazel ${BAZEL_OPTIONS} build -c "${BAZEL_MODE}" //bazel/external:all_external
+  bazel ${BAZEL_OPTIONS} build -c "${BAZEL_MODE}" --host_cxxopt="-march=core2" --host_copt="-march=core2" --cxxopt="-march=core2" --copt="-march=core2" //bazel/external:all_external
 done
 # Allow access by non-root for building.
 chmod -R a+rX /bazel-prebuilt-root /bazel-prebuilt-output
