@@ -1,0 +1,108 @@
+#!/bin/bash
+#
+# chkconfig: 2345 96 4
+# description: Init script for every service
+# processname: ${PROG}
+
+APP_NAME="Envoy"
+APP_USER="envoy"
+ENVOY_PATH="/usr/bin"
+PROG="envoy"
+
+PID_FILE="/var/run/${PROG}.pid"
+LOCK_FILE="/var/lock/subsys/${PROG}"
+LOG_FILE="/var/log/envoy/envoy.log"
+
+readonly ERROR_NO_ENVOY=5
+readonly ERROR_NO_CONFIG=6
+
+readonly SHUTDOWN_DELAY=3
+
+# Source functions library
+. /etc/init.d/functions
+
+print_error_and_exit() {
+    echo "$1: $2"
+    exit $2
+}
+
+conf_check()
+{
+    [ -x ${ENVOY_PATH}/envoy ] || print_error_and_exit 'No envoy binary found' $ERROR_NO_ENVOY
+    [ -f /etc/rtr/envoy/conf/envoy.yaml ] || print_error_and_exit 'No envoy config found' $ERROR_NO_CONFIG
+}
+
+start() {
+    conf_check
+
+    echo -n $"Starting ${PROG}: "
+    /sbin/runuser -s /bin/bash -c "${ENVOY_PATH}/envoy -c /etc/rtr/envoy/conf/envoy.yaml --log-path ${LOG_FILE} &" ${APP_USER}
+
+    RETVAL=$?
+    if [ ${RETVAL} -eq 0 ]; then
+        /bin/sleep 3
+        /bin/touch ${LOCK_FILE}
+        /bin/ps -C ${PROG} -o pid=,cmd= | /bin/awk '{print $1}' > ${PID_FILE}
+        success
+    fi
+    echo
+}
+
+stop() {
+    echo -n $"Stopping ${PROG}: "
+    if [ -s ${PID_FILE} ]; then
+        # Ensure a valid SHUTDOWN_DELAY was provided
+        if [[ $SHUTDOWN_DELAY =~ ^[0-9]+$ ]]; then
+            echo "Using delay: $SHUTDOWN_DELAY"
+        else
+            echo "Invalid delay, using default: $DEFAULT_SHUTDOWN_DELAY"
+            SHUTDOWN_DELAY=$DEFAULT_SHUTDOWN_DELAY
+        fi
+
+        killproc -p ${PID_FILE} -d ${SHUTDOWN_DELAY}
+    else
+        failure $"Stopping ${PROG}"
+    fi
+    RETVAL=$?
+    echo
+    [ ${RETVAL} -eq 0 ] && /bin/rm -f ${LOCK_FILE}
+    return $RETVAL
+}
+
+restart() {
+        stop
+        start
+}
+
+rh_status() {
+    # run checks to determine if the service is running or use generic status
+    status ${PROG}
+}
+
+rh_status_q() {
+    rh_status >/dev/null 2>&1
+}
+
+case "$1" in
+    start)
+        rh_status_q && exit 0
+        $1
+        ;;
+    stop)
+        rh_status_q || exit 0
+        $1
+        ;;
+    restart)
+        $1
+        ;;
+    status)
+        rh_status
+        ;;
+    *)
+        echo $"Usage: $0 {start|stop|restart|status}"
+        RETVAL=1
+        ;;
+esac
+
+exit ${RETVAL}
+
